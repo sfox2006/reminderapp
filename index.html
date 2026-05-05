@@ -20,6 +20,7 @@
             <p id="dailyGreeting">A calm place for your day.</p>
           </div>
         </div>
+        <button class="settings-button" id="settingsToggle" type="button">Settings</button>
 
         <div class="quick-stats" aria-label="Reminder summary">
           <div>
@@ -130,6 +131,7 @@
 
             <div class="actions">
               <button class="primary-button" type="submit">Save reminder</button>
+              <button class="secondary-button" id="cleanupButton" type="button">Clean up words</button>
               <button class="secondary-button" id="translateButton" type="button">Translate</button>
               <button class="secondary-button" id="notifyButton" type="button">Turn on alerts</button>
             </div>
@@ -171,6 +173,37 @@
         </div>
       </article>
     </template>
+
+    <dialog class="settings-dialog" id="settingsDialog" aria-labelledby="settingsTitle">
+      <form method="dialog" class="settings-panel">
+        <div class="settings-heading">
+          <div>
+            <p class="eyebrow">Settings</p>
+            <h2 id="settingsTitle">AI cleanup</h2>
+          </div>
+          <button class="icon-button" value="close" type="submit" aria-label="Close settings">x</button>
+        </div>
+
+        <p class="settings-copy">
+          Add your own Claude API key if you want voice notes cleaned with AI. This is optional, may cost money on your Claude account, and the key is saved only in this browser.
+        </p>
+
+        <label class="field">
+          <span>Claude API key</span>
+          <input id="apiKeyInput" type="password" autocomplete="off" placeholder="sk-ant-...">
+        </label>
+
+        <label class="toggle-row">
+          <input id="autoCleanupInput" type="checkbox">
+          <span>Clean voice notes automatically after recording</span>
+        </label>
+
+        <div class="actions">
+          <button class="primary-button" id="saveSettingsButton" type="button">Save settings</button>
+          <button class="secondary-button" id="clearSettingsButton" type="button">Clear key</button>
+        </div>
+      </form>
+    </dialog>
 
     <script src="app.js" defer></script>
   </body>

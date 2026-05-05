@@ -1,4 +1,20 @@
 const STORAGE_KEY = "reminder-studio-items";
+const API_KEY_STORAGE_KEY = "kind-reminders-claude-api-key";
+const AUTO_CLEANUP_STORAGE_KEY = "kind-reminders-auto-cleanup";
+const CLAUDE_MODEL = "claude-sonnet-4-5";
+const CLEANUP_PROMPT = `You are a reminder formatter. Convert the user's raw input into a single, concise reminder in imperative form.
+
+Rules:
+- Remove filler words (um, ah, like, you know, basically).
+- Remove self-corrections; keep only the final intended version.
+- Rewrite "remind me to X" as just "X".
+- Preserve any specific date, time, person, or place mentioned.
+- Output ONLY the cleaned reminder text. No preamble, no quotes, no explanation.
+- Keep it under 100 characters where possible.
+
+Example input: "Um, remind me to, uh, call mum tomorrow at like 3pm I think yeah 3pm"
+Example output: "Call Mum tomorrow at 3pm"`;
+
 const state = {
   reminders: loadReminders(),
   activeDate: "all",
@@ -6,6 +22,8 @@ const state = {
   deferredInstallPrompt: null,
   recognition: null,
   listening: false,
+  apiKey: localStorage.getItem(API_KEY_STORAGE_KEY) || "",
+  autoCleanup: localStorage.getItem(AUTO_CLEANUP_STORAGE_KEY) === "true",
 };
 
 const els = {
@@ -19,11 +37,18 @@ const els = {
   recordLabel: document.querySelector("#recordLabel"),
   voiceStatus: document.querySelector("#voiceStatus"),
   voiceHelp: document.querySelector("#voiceHelp"),
+  cleanup: document.querySelector("#cleanupButton"),
   translate: document.querySelector("#translateButton"),
   translationPreview: document.querySelector("#translationPreview"),
   translationText: document.querySelector("#translationText"),
   notify: document.querySelector("#notifyButton"),
   install: document.querySelector("#installButton"),
+  settingsToggle: document.querySelector("#settingsToggle"),
+  settingsDialog: document.querySelector("#settingsDialog"),
+  apiKeyInput: document.querySelector("#apiKeyInput"),
+  autoCleanupInput: document.querySelector("#autoCleanupInput"),
+  saveSettings: document.querySelector("#saveSettingsButton"),
+  clearSettings: document.querySelector("#clearSettingsButton"),
   folders: document.querySelector("#folderList"),
   list: document.querySelector("#reminderList"),
   template: document.querySelector("#reminderTemplate"),
@@ -49,6 +74,8 @@ init();
 
 function init() {
   els.date.value = toDateInput(new Date());
+  els.apiKeyInput.value = state.apiKey;
+  els.autoCleanupInput.checked = state.autoCleanup;
   setDailyGreeting();
   setupSpeechRecognition();
   bindEvents();
@@ -60,9 +87,13 @@ function init() {
 function bindEvents() {
   els.form.addEventListener("submit", handleSubmit);
   els.record.addEventListener("click", toggleRecording);
+  els.cleanup.addEventListener("click", cleanupCurrentText);
   els.translate.addEventListener("click", translateCurrentText);
   els.notify.addEventListener("click", requestNotifications);
   els.install.addEventListener("click", installApp);
+  els.settingsToggle.addEventListener("click", openSettings);
+  els.saveSettings.addEventListener("click", saveSettings);
+  els.clearSettings.addEventListener("click", clearSettings);
   document.querySelectorAll("[data-example]").forEach((button) => {
     button.addEventListener("click", () => {
       els.title.value = button.dataset.example;
@@ -170,6 +201,10 @@ function setupSpeechRecognition() {
     if (parsed.time) els.time.value = parsed.time;
     els.voiceStatus.textContent = event.results[event.results.length - 1].isFinal ? "Got it" : "Listening...";
     els.voiceHelp.textContent = transcript || "Keep speaking.";
+
+    if (event.results[event.results.length - 1].isFinal && state.autoCleanup) {
+      cleanupCurrentText();
+    }
   };
 
   state.recognition = recognition;
@@ -190,6 +225,73 @@ function setRecording(isRecording) {
   els.record.setAttribute("aria-pressed", String(isRecording));
   els.recordLabel.textContent = isRecording ? "Stop" : "Tap to talk";
   els.voiceStatus.textContent = isRecording ? "Listening..." : "Ready when you are";
+}
+
+async function cleanupCurrentText() {
+  const rawText = els.title.value.trim();
+  if (!rawText) {
+    els.voiceStatus.textContent = "Add a reminder first";
+    els.voiceHelp.textContent = "Type or tap to talk, then I can tidy the wording.";
+    return;
+  }
+
+  els.cleanup.disabled = true;
+  els.cleanup.textContent = "Cleaning...";
+
+  try {
+    const cleaned = await cleanupTranscript(rawText);
+    els.title.value = cleaned;
+    els.title.dispatchEvent(new Event("input"));
+    els.voiceStatus.textContent = state.apiKey ? "AI cleaned it up" : "Cleaned locally";
+    els.voiceHelp.textContent = state.apiKey ? "Check it over before saving." : "Add a Claude key in Settings for smarter cleanup.";
+  } catch {
+    els.voiceStatus.textContent = "Kept the original words";
+    els.voiceHelp.textContent = "The AI cleanup was unavailable, so nothing was changed.";
+  } finally {
+    els.cleanup.disabled = false;
+    els.cleanup.textContent = "Clean up words";
+  }
+}
+
+async function cleanupTranscript(rawText) {
+  // The app stays useful without a paid key. This small local cleanup handles common filler words.
+  if (!state.apiKey) return cleanupTranscriptLocally(rawText);
+
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": state.apiKey,
+      "anthropic-version": "2023-06-01",
+      // Anthropic requires this header for direct browser calls. Use only for this personal app.
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
+    body: JSON.stringify({
+      model: CLAUDE_MODEL,
+      max_tokens: 200,
+      system: CLEANUP_PROMPT,
+      messages: [
+        {
+          role: "user",
+          content: rawText,
+        },
+      ],
+    }),
+  });
+
+  if (!response.ok) throw new Error("Claude cleanup failed");
+  const data = await response.json();
+  return (data.content?.[0]?.text || rawText).trim();
+}
+
+function cleanupTranscriptLocally(rawText) {
+  // Claude cleanup is smarter. This no-key version keeps the app free and graceful.
+  const fillerWords = /\b(um+|uh+|ah+|er+|like|you know|basically|actually|sort of|kind of)\b/gi;
+  let cleaned = rawText.replace(fillerWords, " ");
+  cleaned = cleaned.replace(/\bremind me to\b/gi, "");
+  cleaned = cleaned.replace(/\bremind me\b/gi, "");
+  cleaned = cleaned.replace(/\s+/g, " ").trim();
+  return cleaned ? cleaned[0].toUpperCase() + cleaned.slice(1) : rawText;
 }
 
 async function translateCurrentText() {
@@ -444,6 +546,31 @@ async function installApp() {
   await state.deferredInstallPrompt.userChoice;
   state.deferredInstallPrompt = null;
   els.install.hidden = true;
+}
+
+function openSettings() {
+  els.apiKeyInput.value = state.apiKey;
+  els.autoCleanupInput.checked = state.autoCleanup;
+  els.settingsDialog.showModal();
+}
+
+function saveSettings() {
+  state.apiKey = els.apiKeyInput.value.trim();
+  state.autoCleanup = els.autoCleanupInput.checked;
+  localStorage.setItem(API_KEY_STORAGE_KEY, state.apiKey);
+  localStorage.setItem(AUTO_CLEANUP_STORAGE_KEY, String(state.autoCleanup));
+  els.voiceStatus.textContent = "Settings saved";
+  els.voiceHelp.textContent = state.apiKey ? "AI cleanup is ready when you want it." : "Local cleanup is still available.";
+  els.settingsDialog.close();
+}
+
+function clearSettings() {
+  state.apiKey = "";
+  els.apiKeyInput.value = "";
+  localStorage.removeItem(API_KEY_STORAGE_KEY);
+  els.voiceStatus.textContent = "API key cleared";
+  els.voiceHelp.textContent = "Voice and local cleanup still work without a key.";
+  els.settingsDialog.close();
 }
 
 function registerServiceWorker() {

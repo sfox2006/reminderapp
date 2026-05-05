@@ -1,4 +1,4 @@
-const CACHE_NAME = "kind-reminders-v2";
+const CACHE_NAME = "kind-reminders-v3";
 const APP_ASSETS = [
   "./",
   "./index.html",
@@ -26,6 +26,9 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
+    caches.match(event.request).then((cached) => {
+      if (cached) return cached;
+      return fetch(event.request).catch(() => caches.match("./index.html"));
+    })
   );
 });
