@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#20535f">
+    <meta name="description" content="A free local-first reminder app with voice input, translation, date folders, and color coding.">
+    <title>Reminder Studio</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="apple-touch-icon" href="icons/icon-192.svg">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Date folders">
+        <div class="brand-block">
+          <div class="app-mark" aria-hidden="true">R</div>
+          <div>
+            <h1>Reminder Studio</h1>
+            <p>Voice, translate, plan.</p>
+          </div>
+        </div>
+
+        <div class="quick-stats" aria-label="Reminder summary">
+          <div>
+            <span id="totalCount">0</span>
+            <small>Total</small>
+          </div>
+          <div>
+            <span id="todayCount">0</span>
+            <small>Today</small>
+          </div>
+          <div>
+            <span id="doneCount">0</span>
+            <small>Done</small>
+          </div>
+        </div>
+
+        <nav class="folder-list" id="folderList"></nav>
+      </aside>
+
+      <main class="workspace">
+        <section class="composer" aria-labelledby="composerTitle">
+          <div class="composer-heading">
+            <div>
+              <p class="eyebrow">New reminder</p>
+              <h2 id="composerTitle">Say it, translate it, save it.</h2>
+            </div>
+            <button class="ghost-button" id="installButton" type="button" hidden>Install</button>
+          </div>
+
+          <div class="voice-panel">
+            <button class="record-button" id="recordButton" type="button" aria-pressed="false">
+              <span class="record-dot" aria-hidden="true"></span>
+              <span id="recordLabel">Record voice</span>
+            </button>
+            <div class="voice-copy">
+              <strong id="voiceStatus">Ready for voice input</strong>
+              <span id="voiceHelp">Chrome and Edge support live speech recognition best.</span>
+            </div>
+          </div>
+
+          <form id="reminderForm" class="reminder-form">
+            <label class="field wide">
+              <span>Reminder</span>
+              <textarea id="titleInput" rows="3" placeholder="Try: Remind me tomorrow at 9 to call Mum" required></textarea>
+            </label>
+
+            <div class="form-grid">
+              <label class="field">
+                <span>Date</span>
+                <input id="dateInput" type="date" required>
+              </label>
+              <label class="field">
+                <span>Time</span>
+                <input id="timeInput" type="time">
+              </label>
+              <label class="field">
+                <span>Folder</span>
+                <select id="folderInput">
+                  <option>Personal</option>
+                  <option>Work</option>
+                  <option>Health</option>
+                  <option>Shopping</option>
+                  <option>Family</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Translate to</span>
+                <select id="languageInput">
+                  <option value="">No translation</option>
+                  <option value="es">Spanish</option>
+                  <option value="fr">French</option>
+                  <option value="it">Italian</option>
+                  <option value="de">German</option>
+                  <option value="ja">Japanese</option>
+                  <option value="ko">Korean</option>
+                  <option value="zh-CN">Chinese</option>
+                  <option value="ar">Arabic</option>
+                  <option value="hi">Hindi</option>
+                  <option value="pt">Portuguese</option>
+                </select>
+              </label>
+            </div>
+
+            <fieldset class="color-picker">
+              <legend>Colour</legend>
+              <label><input type="radio" name="color" value="#2f80ed" checked><span style="--swatch:#2f80ed"></span>Blue</label>
+              <label><input type="radio" name="color" value="#27ae60"><span style="--swatch:#27ae60"></span>Green</label>
+              <label><input type="radio" name="color" value="#f2994a"><span style="--swatch:#f2994a"></span>Orange</label>
+              <label><input type="radio" name="color" value="#eb5757"><span style="--swatch:#eb5757"></span>Red</label>
+              <label><input type="radio" name="color" value="#9b51e0"><span style="--swatch:#9b51e0"></span>Purple</label>
+            </fieldset>
+
+            <div class="translation-preview" id="translationPreview" hidden>
+              <span>Translation</span>
+              <p id="translationText"></p>
+            </div>
+
+            <div class="actions">
+              <button class="primary-button" type="submit">Add reminder</button>
+              <button class="secondary-button" id="translateButton" type="button">Translate text</button>
+              <button class="secondary-button" id="notifyButton" type="button">Enable alerts</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="list-section" aria-labelledby="listTitle">
+          <div class="list-toolbar">
+            <div>
+              <p class="eyebrow" id="activeFolderLabel">All dates</p>
+              <h2 id="listTitle">Your reminders</h2>
+            </div>
+            <div class="filters" role="group" aria-label="Reminder filters">
+              <button class="filter active" type="button" data-filter="all">All</button>
+              <button class="filter" type="button" data-filter="open">Open</button>
+              <button class="filter" type="button" data-filter="done">Done</button>
+            </div>
+          </div>
+
+          <div id="reminderList" class="reminder-list" aria-live="polite"></div>
+        </section>
+      </main>
+    </div>
+
+    <template id="reminderTemplate">
+      <article class="reminder-card">
+        <div class="color-rail"></div>
+        <div class="reminder-content">
+          <div class="reminder-topline">
+            <span class="folder-pill"></span>
+            <time></time>
+          </div>
+          <h3></h3>
+          <p class="translation" hidden></p>
+          <div class="card-actions">
+            <button type="button" class="complete-button"></button>
+            <button type="button" class="delete-button">Delete</button>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>

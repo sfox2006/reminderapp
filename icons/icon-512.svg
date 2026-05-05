@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Reminder Studio">
+  <rect width="512" height="512" rx="100" fill="#20535f"/>
+  <path fill="#d7efe5" d="M122 148c0-28 22-50 50-50h168c28 0 50 22 50 50v234c0 28-22 50-50 50H172c-28 0-50-22-50-50V148Z"/>
+  <path fill="#f2994a" d="M182 210h148v38H182z"/>
+  <path fill="#27ae60" d="M182 286h102v38H182z"/>
+  <path fill="#eb5757" d="M314 284h52v52h-52z"/>
+  <path fill="#20535f" d="M206 74h100v76H206z"/>
+</svg>
