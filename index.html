@@ -3,28 +3,28 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#20535f">
-    <meta name="description" content="A free local-first reminder app with voice input, translation, date folders, and color coding.">
-    <title>Reminder Studio</title>
+    <meta name="theme-color" content="#2f6f67">
+    <meta name="description" content="A friendly reminder app with voice input, translation, date folders, and color coding.">
+    <title>Kind Reminders</title>
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="stylesheet" href="styles.css">
     <link rel="apple-touch-icon" href="icons/icon-192.svg">
   </head>
   <body>
     <div class="app-shell">
-      <aside class="sidebar" aria-label="Date folders">
+      <aside class="sidebar" aria-label="Reminder dates">
         <div class="brand-block">
-          <div class="app-mark" aria-hidden="true">R</div>
+          <div class="app-mark" aria-hidden="true">K</div>
           <div>
-            <h1>Reminder Studio</h1>
-            <p>Voice, translate, plan.</p>
+            <h1>Kind Reminders</h1>
+            <p id="dailyGreeting">A calm place for your day.</p>
           </div>
         </div>
 
         <div class="quick-stats" aria-label="Reminder summary">
           <div>
             <span id="totalCount">0</span>
-            <small>Total</small>
+            <small>Saved</small>
           </div>
           <div>
             <span id="todayCount">0</span>
@@ -32,8 +32,13 @@
           </div>
           <div>
             <span id="doneCount">0</span>
-            <small>Done</small>
+            <small>Finished</small>
           </div>
+        </div>
+
+        <div class="sidebar-note">
+          <strong>Dates become folders</strong>
+          <span>Pick a day and everything for that date gathers here.</span>
         </div>
 
         <nav class="folder-list" id="folderList"></nav>
@@ -44,26 +49,26 @@
           <div class="composer-heading">
             <div>
               <p class="eyebrow">New reminder</p>
-              <h2 id="composerTitle">Say it, translate it, save it.</h2>
+              <h2 id="composerTitle">What should I remember?</h2>
             </div>
-            <button class="ghost-button" id="installButton" type="button" hidden>Install</button>
+            <button class="ghost-button" id="installButton" type="button" hidden>Install app</button>
           </div>
 
           <div class="voice-panel">
             <button class="record-button" id="recordButton" type="button" aria-pressed="false">
               <span class="record-dot" aria-hidden="true"></span>
-              <span id="recordLabel">Record voice</span>
+              <span id="recordLabel">Tap to talk</span>
             </button>
             <div class="voice-copy">
-              <strong id="voiceStatus">Ready for voice input</strong>
-              <span id="voiceHelp">Chrome and Edge support live speech recognition best.</span>
+              <strong id="voiceStatus">Ready when you are</strong>
+              <span id="voiceHelp">Speak naturally, then adjust the details below.</span>
             </div>
           </div>
 
           <form id="reminderForm" class="reminder-form">
             <label class="field wide">
-              <span>Reminder</span>
-              <textarea id="titleInput" rows="3" placeholder="Try: Remind me tomorrow at 9 to call Mum" required></textarea>
+              <span>What to remember</span>
+              <textarea id="titleInput" rows="3" placeholder="Example: Remind me tomorrow at 9 to call Mum" required></textarea>
             </label>
 
             <div class="form-grid">
@@ -76,7 +81,7 @@
                 <input id="timeInput" type="time">
               </label>
               <label class="field">
-                <span>Folder</span>
+                <span>Life area</span>
                 <select id="folderInput">
                   <option>Personal</option>
                   <option>Work</option>
@@ -112,15 +117,21 @@
               <label><input type="radio" name="color" value="#9b51e0"><span style="--swatch:#9b51e0"></span>Purple</label>
             </fieldset>
 
+            <div class="example-row" aria-label="Quick reminder examples">
+              <button type="button" data-example="Drink water in 30 minutes">Drink water</button>
+              <button type="button" data-example="Call Mum tomorrow at 9am">Call Mum</button>
+              <button type="button" data-example="Buy groceries Friday at 5pm">Groceries</button>
+            </div>
+
             <div class="translation-preview" id="translationPreview" hidden>
               <span>Translation</span>
               <p id="translationText"></p>
             </div>
 
             <div class="actions">
-              <button class="primary-button" type="submit">Add reminder</button>
-              <button class="secondary-button" id="translateButton" type="button">Translate text</button>
-              <button class="secondary-button" id="notifyButton" type="button">Enable alerts</button>
+              <button class="primary-button" type="submit">Save reminder</button>
+              <button class="secondary-button" id="translateButton" type="button">Translate</button>
+              <button class="secondary-button" id="notifyButton" type="button">Turn on alerts</button>
             </div>
           </form>
         </section>
@@ -129,12 +140,12 @@
           <div class="list-toolbar">
             <div>
               <p class="eyebrow" id="activeFolderLabel">All dates</p>
-              <h2 id="listTitle">Your reminders</h2>
+              <h2 id="listTitle">Coming up</h2>
             </div>
             <div class="filters" role="group" aria-label="Reminder filters">
               <button class="filter active" type="button" data-filter="all">All</button>
-              <button class="filter" type="button" data-filter="open">Open</button>
-              <button class="filter" type="button" data-filter="done">Done</button>
+              <button class="filter" type="button" data-filter="open">To do</button>
+              <button class="filter" type="button" data-filter="done">Finished</button>
             </div>
           </div>
 

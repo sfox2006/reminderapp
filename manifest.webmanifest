@@ -1,11 +1,11 @@
 {
-  "name": "Reminder Studio",
+  "name": "Kind Reminders",
   "short_name": "Reminders",
-  "description": "A free local-first reminder app with voice input, translation, date folders, and colour coding.",
+  "description": "A friendly reminder app with voice input, translation, date folders, and colour coding.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f6f2ea",
-  "theme_color": "#20535f",
+  "theme_color": "#2f6f67",
   "icons": [
     {
       "src": "icons/icon-192.svg",

@@ -1,6 +1,6 @@
-# Reminder Studio
+# Kind Reminders
 
-A free, local-first reminder app for phone or computer. It runs in a browser, saves reminders on the device with local storage, and can be installed as a Progressive Web App.
+A friendly, local-first reminder app for phone or computer. It runs in a browser, saves reminders on the device with local storage, and can be installed as a Progressive Web App.
 
 ## Use It
 
@@ -18,6 +18,7 @@ To start the preview server later:
 
 ## Features
 
+- Friendlier mobile-first interface.
 - Voice input using the browser speech recognition API.
 - Translation using the browser Translator API when available, with a free web fallback.
 - Date folders generated automatically from reminder dates.

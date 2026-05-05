@@ -1,4 +1,4 @@
-const CACHE_NAME = "reminder-studio-v1";
+const CACHE_NAME = "kind-reminders-v2";
 const APP_ASSETS = [
   "./",
   "./index.html",

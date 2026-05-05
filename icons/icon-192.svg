@@ -1,8 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-label="Reminder Studio">
-  <rect width="192" height="192" rx="38" fill="#20535f"/>
-  <path fill="#d7efe5" d="M46 56c0-10 8-18 18-18h64c10 0 18 8 18 18v88c0 10-8 18-18 18H64c-10 0-18-8-18-18V56Z"/>
-  <path fill="#f2994a" d="M68 78h56v14H68z"/>
-  <path fill="#27ae60" d="M68 106h38v14H68z"/>
-  <path fill="#eb5757" d="M118 106h16v16h-16z"/>
-  <path fill="#20535f" d="M78 28h36v28H78z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-label="Kind Reminders">
+  <rect width="192" height="192" rx="42" fill="#2f6f67"/>
+  <path fill="#fff1b8" d="M46 56c0-10 8-18 18-18h64c10 0 18 8 18 18v88c0 10-8 18-18 18H64c-10 0-18-8-18-18V56Z"/>
+  <path fill="#ffffff" d="M61 72c0-7 6-13 13-13h44c7 0 13 6 13 13v56c0 7-6 13-13 13H74c-7 0-13-6-13-13V72Z"/>
+  <path fill="#f2994a" d="M76 83h40v12H76z"/>
+  <path fill="#27ae60" d="M76 108h28v12H76z"/>
+  <path fill="#eb5757" d="M113 106h16v16h-16z"/>
+  <path fill="#2f6f67" d="M82 28h28v31H82z"/>
 </svg>

@@ -27,6 +27,7 @@ const els = {
   folders: document.querySelector("#folderList"),
   list: document.querySelector("#reminderList"),
   template: document.querySelector("#reminderTemplate"),
+  dailyGreeting: document.querySelector("#dailyGreeting"),
   totalCount: document.querySelector("#totalCount"),
   todayCount: document.querySelector("#todayCount"),
   doneCount: document.querySelector("#doneCount"),
@@ -48,6 +49,7 @@ init();
 
 function init() {
   els.date.value = toDateInput(new Date());
+  setDailyGreeting();
   setupSpeechRecognition();
   bindEvents();
   render();
@@ -61,6 +63,13 @@ function bindEvents() {
   els.translate.addEventListener("click", translateCurrentText);
   els.notify.addEventListener("click", requestNotifications);
   els.install.addEventListener("click", installApp);
+  document.querySelectorAll("[data-example]").forEach((button) => {
+    button.addEventListener("click", () => {
+      els.title.value = button.dataset.example;
+      els.title.dispatchEvent(new Event("input"));
+      els.title.focus();
+    });
+  });
 
   document.querySelectorAll(".filter").forEach((button) => {
     button.addEventListener("click", () => {
@@ -124,7 +133,7 @@ async function handleSubmit(event) {
   document.querySelector("input[name='color'][value='#2f80ed']").checked = true;
   clearTranslationPreview();
   submitButton.disabled = false;
-  submitButton.textContent = "Add reminder";
+  submitButton.textContent = "Save reminder";
   render();
 }
 
@@ -132,8 +141,8 @@ function setupSpeechRecognition() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
     els.record.disabled = true;
-    els.voiceStatus.textContent = "Voice recording is not available in this browser";
-    els.voiceHelp.textContent = "Try Chrome or Edge on your phone or computer.";
+    els.voiceStatus.textContent = "Voice is not available here";
+    els.voiceHelp.textContent = "Typing still works beautifully.";
     return;
   }
 
@@ -145,8 +154,8 @@ function setupSpeechRecognition() {
   recognition.onstart = () => setRecording(true);
   recognition.onend = () => setRecording(false);
   recognition.onerror = (event) => {
-    els.voiceStatus.textContent = "Voice input stopped";
-    els.voiceHelp.textContent = event.error === "not-allowed" ? "Microphone access was blocked." : "Tap record and try again.";
+    els.voiceStatus.textContent = "Voice input paused";
+      els.voiceHelp.textContent = event.error === "not-allowed" ? "Microphone access was blocked." : "Tap to talk and try again.";
   };
   recognition.onresult = (event) => {
     const transcript = Array.from(event.results)
@@ -159,7 +168,7 @@ function setupSpeechRecognition() {
     const parsed = parseReminderText(transcript);
     if (parsed.date) els.date.value = parsed.date;
     if (parsed.time) els.time.value = parsed.time;
-    els.voiceStatus.textContent = event.results[event.results.length - 1].isFinal ? "Voice captured" : "Listening...";
+    els.voiceStatus.textContent = event.results[event.results.length - 1].isFinal ? "Got it" : "Listening...";
     els.voiceHelp.textContent = transcript || "Keep speaking.";
   };
 
@@ -179,20 +188,20 @@ function setRecording(isRecording) {
   state.listening = isRecording;
   els.record.classList.toggle("recording", isRecording);
   els.record.setAttribute("aria-pressed", String(isRecording));
-  els.recordLabel.textContent = isRecording ? "Stop" : "Record voice";
-  els.voiceStatus.textContent = isRecording ? "Listening..." : "Ready for voice input";
+  els.recordLabel.textContent = isRecording ? "Stop" : "Tap to talk";
+  els.voiceStatus.textContent = isRecording ? "Listening..." : "Ready when you are";
 }
 
 async function translateCurrentText() {
   const text = els.title.value.trim();
   const target = els.language.value;
   if (!text || !target) {
-    els.voiceStatus.textContent = "Choose text and a language first";
+    els.voiceStatus.textContent = "Add words and choose a language first";
     return;
   }
 
   els.translate.disabled = true;
-  els.translate.textContent = "Translating...";
+    els.translate.textContent = "Translating...";
   try {
     const translation = await translateText(text, target);
     els.translationText.textContent = translation;
@@ -205,7 +214,7 @@ async function translateCurrentText() {
     els.voiceHelp.textContent = error.message;
   } finally {
     els.translate.disabled = false;
-    els.translate.textContent = "Translate text";
+    els.translate.textContent = "Translate";
   }
 }
 
@@ -319,7 +328,11 @@ function renderReminders() {
   if (!filtered.length) {
     const empty = document.createElement("div");
     empty.className = "empty-state";
-    empty.textContent = "No reminders here yet.";
+    const title = document.createElement("strong");
+    title.textContent = state.activeDate === "all" ? "Nothing waiting on you." : "This day is clear.";
+    const body = document.createElement("span");
+    body.textContent = "Add a reminder whenever something pops into your head.";
+    empty.append(title, body);
     els.list.replaceChildren(empty);
     return;
   }
@@ -342,7 +355,7 @@ function createReminderCard(reminder) {
   }
 
   const complete = node.querySelector(".complete-button");
-  complete.textContent = reminder.done ? "Reopen" : "Done";
+  complete.textContent = reminder.done ? "Bring back" : "Finished";
   complete.addEventListener("click", () => {
     reminder.done = !reminder.done;
     saveReminders();
@@ -403,7 +416,7 @@ function startNotificationLoop() {
       const [hour, minute] = reminder.time.split(":").map(Number);
       due.setHours(hour, minute, 0, 0);
       if (due <= now) {
-        new Notification("Reminder Studio", {
+        new Notification("Kind Reminders", {
           body: reminder.title,
           tag: reminder.id,
         });
@@ -412,6 +425,17 @@ function startNotificationLoop() {
       }
     });
   }, 30000);
+}
+
+function setDailyGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) {
+    els.dailyGreeting.textContent = "Good morning. Let's keep it light.";
+  } else if (hour < 18) {
+    els.dailyGreeting.textContent = "Good afternoon. One thing at a time.";
+  } else {
+    els.dailyGreeting.textContent = "Good evening. Tomorrow can wait its turn.";
+  }
 }
 
 async function installApp() {
